@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="index.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div style="margin-bottom: 10px;">
+        <button id="start" onclick="handleStart()">start</button>
+        <button id="pause" onclick="handlePause()">pause</button>
+        <button id="reset" onclick="handleReset()">reset</button>
+        <input type="number" id="inpt-time" onchange="handleInput(event)" value="">
+    </div>
+    <div style="width: fit-content; background-color: aqua; border: 1px solid black; margin-bottom: 10px;" id="area">
+    </div>
+    <div>
+        <table id="table">
+            <th>Mouse click number</th>
+            <th>Reaction time</th>
+            <tbody id="table-body">
+
+            </tbody>
+        </table>
+    </div>
+    <script>
+        let mgTime = 2;
+        let prevId = 0;
+        var clickCount = 0;
+        var startTime = 0;
+        let interval;
+
+        function handleStart(){
+            console.log(mgTime);
+            let id = Math.floor((Math.random() * 100)/2);
+            resetMagicBox(prevId);
+            magicBox(id);
+            startTime = Date.now();
+            interval = setInterval(()=>{
+                let id = Math.floor((Math.random() * 100)/2);
+                resetMagicBox(prevId);
+                magicBox(id);
+            },mgTime*1000);
+        }
+
+        function magicBox(box) {
+            const bx =document.getElementById(box);
+            if (bx) {
+                bx.style.backgroundColor = 'red';
+            }
+            prevId = box;
+        }
+
+        function resetMagicBox(box) {
+            const bx =document.getElementById(box);
+            if(bx){
+                bx.style.backgroundColor = 'aqua';
+            }
+            prevId = box;
+        }
+
+        function handlePause(){
+            resetMagicBox(prevId);
+            clearInterval(interval);
+        }
+
+        function handleInput(){
+            inpt = document.getElementById('inpt-time');
+            if(inpt){
+                console.log('mgTime',inpt.value);
+                mgTime = Number(inpt.value);
+                handlePause(interval);
+            }
+
+        }
+
+        function handleReset(){
+            window.location.reload();
+        }
+
+        function clickArea(event) {
+            const container = document.getElementById('area');
+        }
+        function populateArea() {
+            const container = document.getElementById('area');
+            let  ct=1;
+            for(let i=1;i<=7;i++){
+                const row = document.createElement('div');
+                row.style.display = "flex";
+                container.appendChild(row);
+                for(let j=1;j<=7;j++){
+                    let e = document.createElement('div');
+                    e.id = ct;
+                    ct++;
+                    e.style.height = '40px';
+                    e.style.width = '40px';
+                    e.style.border = 'solid 1px black';
+                    e.addEventListener('click',(event)=>{
+                        if(event.srcElement.id == prevId) {
+                            table = document.getElementById('table');
+                            let row = document.createElement('tr');
+                            let d1 = document.createElement('td');
+                            d1.innerText = ++clickCount;
+                            let d2 = document.createElement('td');
+                            d2.innerText = (Date.now() - startTime)/1000;
+                            row.appendChild(d1);
+                            row.appendChild(d2);
+                            table.appendChild(row);
+                            clearInterval();
+                            handleInput();
+                            handleStart();
+                        }
+                    });
+                    row.appendChild(e);
+                }
+            }
+        }
+        populateArea();
+    </script>
+</body>
+</html>
