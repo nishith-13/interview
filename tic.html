@@ -1,0 +1,222 @@
+<html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: lightcyan;
+            text-align: center;
+        }
+        .container {
+            height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .game {
+            height: 60vmin;
+            width: 60vmin;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5vmin;
+            justify-content: center;
+        }
+        .box {
+            height: 18vmin;
+            width: 18vmin;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 0 1rem rgba(0, 0, 0, 0.3);
+            font-size: 8vmin;
+            color: red;
+            background-color: yellow;
+        }
+        #reset {
+            padding: 1rem;
+            font-size: 1.25rem;
+            background: #191913;
+            color: white;
+            border-radius: 1rem;
+            border: none;
+        }
+        .box:hover {
+            background-color: chocolate;
+        }
+        #new-btn {
+            padding: 1rem;
+            font-size: 1.25rem;
+            background: #191913;
+            color: white;
+            border-radius: 1rem;
+            border: none;
+        }
+        #msg {
+            font-size: 8vmin;
+        }
+        .msg-container {
+            height: 30vmin;
+        }
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="msg-container hide">
+        <p id="msg">Winner</p>
+        <button id="new-btn">New Game</button>
+    </div>
+    <main>
+        <h1>Tic Tac Toe</h1>
+        <div class="container">
+            <div class="game">
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+                <button class="box"></button>
+            </div>
+        </div>
+        <button id="reset">Reset Game</button>
+    </main>
+    <script>
+        let boxes = [...document.querySelectorAll('.box')];
+        let resetBtn = document.querySelector('#reset');
+        let turnX = true; // Player O starts
+        let newGameBtn = document.querySelector('#new-btn');
+        let msgContainer = document.querySelector('.msg-container');
+        let msg = document.querySelector('#msg');
+        let isGameOn = false;
+
+        const winPatterns = [
+            [0, 1, 2],
+            [0, 3, 6],
+            [0, 4, 8],
+            [1, 4, 7],
+            [2, 5, 8],
+            [2, 4, 6],
+            [3, 4, 5],
+            [6, 7, 8]
+        ];
+
+        boxes.forEach((box) => {
+            box.addEventListener('click', function () {
+                isGameOn = true;
+                if (turnX) {
+                    box.innerText = 'X';
+                    box.style.color = 'red';
+                    turnX = false;
+                    box.disabled = true;
+                    checkWinner();
+                    if(isGameOn) {
+                        computerMove();
+                    }
+                }
+            });
+        });
+
+        const enableBoxes = () => {
+            for (let box of boxes) {
+                box.disabled = false;
+                box.innerText = "";
+            }
+        };
+
+        const disableBoxes = () => {
+            for (let box of boxes) {
+                box.disabled = true;
+            }
+        };
+
+        const showWinner = (winner) => {
+            msg.innerText = `Congratulations, Winner is ${winner}`;
+            msgContainer.classList.remove('hide');
+            disableBoxes();
+            isGameOn = false;
+        };
+
+        const checkWinner = () => {
+            let hasWin = false;
+            for (let pattern of winPatterns) {
+                let pos1Val = boxes[pattern[0]].innerText;
+                let pos2Val = boxes[pattern[1]].innerText;
+                let pos3Val = boxes[pattern[2]].innerText;
+
+                if (pos1Val !== "" && pos2Val!=="" && pos3Val!=="" 
+                    && pos1Val === pos2Val && pos2Val === pos3Val) {
+                    showWinner(pos1Val);
+                    hasWin = true;
+                    return;
+                }
+            }
+
+            if (!hasWin) {
+                const allBoxes = [...boxes].every((box) => box.innerText !== "");
+                if (allBoxes) {
+                    msgContainer.classList.remove('hide');
+                    msg.innerText = 'Match Drawn';
+                    isGameOn = false;
+                }
+            }
+        };
+
+        const resetGame = () => {
+            turnX = true;
+            enableBoxes();
+            msgContainer.classList.add('hide');
+        };
+
+        function findBestMove(player) {
+            for (let pattern of winPatterns) {
+                let values = pattern.map(i => boxes[i].innerText);
+                if (
+                    values.filter(v => v === player).length === 2 &&
+                    values.includes("")
+                ) {
+                    return pattern[values.indexOf("")];
+                }
+            }
+            return null;
+        }
+
+
+        function computerMove() {
+            // 1. Try to win
+            let move = findBestMove('O');
+            if (move === null) {
+                // 2. Block player
+                move = findBestMove('X');
+            }
+            if (move === null) {
+                // 3. Take center
+                if (boxes[4].innerText === "") move = 4;
+            }
+            if (move === null) {
+                // 4. Take a corner
+                const corners = [0, 2, 6, 8].filter(i => boxes[i].innerText === "");
+                if (corners.length) move = corners[0];
+            }
+            if (move === null) {
+                // 5. Take any remaining cell
+                move = boxes.findIndex(box => box.innerText === "");
+            }
+
+            boxes[move].innerText = 'O';
+            boxes[move].disabled = true;
+            boxes[move].style.color = 'green';
+            
+            turnX = true;
+
+            checkWinner();
+        }
+        newGameBtn.addEventListener('click', resetGame);
+        resetBtn.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
